@@ -1,0 +1,5 @@
+user = postfix
+password =  ${DB_PASSWORD}
+hosts = localhost
+dbname = postfix
+query = SELECT destination FROM virtual_aliases WHERE source='%s'

@@ -1,0 +1,10 @@
+
+user_query = SELECT email as user from virtual_users where email = '%u';
+
+
+driver = mysql
+connect = host=/var/run/mysqld/mysqld.sock dbname=postfix user=postfix password=${DB_PASSWORD}
+default_pass_scheme = SHA256-CRYPT
+password_query = SELECT email as user, password FROM virtual_users WHERE email='%u';
+
+iterate_query = SELECT email AS user FROM virtual_users;
