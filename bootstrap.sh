@@ -56,13 +56,13 @@ SQL_TBL_ALIAS='CREATE TABLE IF NOT EXISTS `virtual_aliases` (
                  ) ENGINE=InnoDB DEFAULT CHARSET=utf8;'
 
 # The next 3 is what's usually done by mysql_secure_install
-SQL_ROOT_PW='UPDATE mysql.user SET Password=PASSWORD(`$DB_ROOT_PASSWORD`) WHERE
-          User=`root`;'
+SQL_ROOT_PW="UPDATE mysql.user SET Password=PASSWORD('"$DB_ROOT_PASSWORD"') WHERE
+          User='root';"
 
-SQL_ROOT_REMOTE='DELETE FROM mysql.user WHERE User='root' AND Host NOT IN
-                ('localhost', '127.0.0.1', '::1');'
+SQL_ROOT_REMOTE="DELETE FROM mysql.user WHERE User='root' AND Host NOT IN
+                ('localhost', '127.0.0.1', '::1');"
 
-SQL_RM_ANON='DELETE FROM mysql.user WHERE User='';'
+SQL_RM_ANON="DELETE FROM mysql.user WHERE User='';"
 
 
 # Check the arguements
@@ -168,16 +168,19 @@ _cert() {
         if [ ! -d ~/.acme.sh ]; then
         wget -O -  ${verbose--q} https://get.acme.sh | sh -s email=${EMAIL}
         _return "Download"
+        /root/.acme.sh/acme.sh --register-account -m ${EMAIL} --server letsencrypt
+        /root/.acme.sh/acme.sh --issue --standalone -d ${DOMAIN}
+        _return "API Call"
         else 
         /root/.acme.sh/acme.sh --register-account -m ${EMAIL} --server letsencrypt
         /root/.acme.sh/acme.sh --issue --standalone -d ${DOMAIN}
         _return "API Call"
         fi
 
-        cp ${verbose--v} /root/acme.sh/${DOMAIN}/${DOMAIN}.key \
+        cp ${verbose--v} /root/.acme.sh/${DOMAIN}/${DOMAIN}.key \
         /etc/ssl/private/mailserver.key
         _return "Copy Keyfile for $DOMAIN"
-        cp ${verbose--v}  /root/acme.sh/${DOMAIN}/fullchain.cer \
+        cp ${verbose--v}  /root/.acme.sh/${DOMAIN}/fullchain.cer \
         /etc//ssl/private/
         _return "Copy Cert for $DOMAIN"
 }
@@ -195,8 +198,7 @@ _postfix() {
         mount -a
         _return "Mounting MySQL Socket"
 
-        sed -e 's/${DOMAIN}/'$DOMAIN'/g' postfix/main.cf > /etc/postfix/main.cf
-        sed -e 's/${HOSTNAME}/'$HOSTNAME'/g' postfix/main.cf > /etc/postfix/main.cf
+        sed -e 's/${HOSTNAME}/'$DOMAIN'/g' postfix/main.cf > /etc/postfix/main.cf
 
         mkdir -p /etc/postfix/local
         
